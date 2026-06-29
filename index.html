@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Industrial Energy Monitoring EMS</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">ISO 50001 aligned energy management</p>
+        <h1>Industrial Energy Monitoring EMS</h1>
+      </div>
+      <div class="topbar-actions">
+        <button id="seedBtn" class="secondary" type="button">Load Sample Data</button>
+        <button id="exportJsonBtn" class="secondary" type="button">Export JSON</button>
+        <button id="exportCsvBtn" class="secondary" type="button">Export CSV</button>
+        <button id="printBtn" type="button">Print Report</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-grid" aria-label="Plant summary">
+        <div class="plant-visual" aria-label="Plant equipment status overview">
+          <div class="busbar"></div>
+          <button class="node n1" data-status-node="meter" data-detail-group="meter" type="button" title="Meter status">Meter</button>
+          <button class="node n2" data-status-node="motors" data-detail-group="motors" type="button" title="Motors status">Motors</button>
+          <button class="node n3" data-status-node="boiler" data-detail-group="boiler" type="button" title="Boiler status">Boiler</button>
+          <button class="node n4" data-status-node="chiller" data-detail-group="chiller" type="button" title="Chiller status">Chiller</button>
+          <button class="node n5" data-status-node="solar" data-detail-group="solar" type="button" title="Solar status">Solar</button>
+          <button class="node n6" data-status-node="dg" data-detail-group="dg" type="button" title="DG status">DG</button>
+        </div>
+        <div class="summary-panel">
+          <div>
+            <p class="eyebrow">Live manual rollup</p>
+            <h2 id="siteStatus">Awaiting entries</h2>
+          </div>
+          <div class="summary-metrics" id="summaryMetrics"></div>
+        </div>
+      </section>
+
+      <nav class="tabs" aria-label="Main views">
+        <button class="tab active" data-view="dashboard" type="button">Dashboard</button>
+        <button class="tab" data-view="entry" type="button">Manual Entry</button>
+        <button class="tab" data-view="equipment" type="button">Equipment</button>
+        <button class="tab" data-view="analysis" type="button">Analysis</button>
+        <button class="tab" data-view="reports" type="button">Reports</button>
+      </nav>
+
+      <section id="dashboard" class="view active">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Operations center</p>
+            <h2>Dashboards</h2>
+          </div>
+          <p id="lastUpdated">No readings saved yet.</p>
+        </div>
+        <div class="dashboard-grid">
+          <article>
+            <h3>Electrical Dashboard</h3>
+            <div class="metric-grid" id="electricalDashboard"></div>
+          </article>
+          <article>
+            <h3>Production Dashboard</h3>
+            <div class="metric-grid" id="productionDashboard"></div>
+          </article>
+          <article>
+            <h3>Sustainability Dashboard</h3>
+            <div class="metric-grid" id="sustainabilityDashboard"></div>
+          </article>
+        </div>
+        <div class="wide-grid">
+          <article>
+            <h3>Active Alarms</h3>
+            <div id="alarmList" class="stack"></div>
+          </article>
+          <article>
+            <h3>AI-Based Recommendations</h3>
+            <div id="recommendationList" class="stack"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="detailPanel" class="detail-panel" aria-live="polite">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Equipment detail</p>
+            <h2 id="detailTitle">Select equipment</h2>
+          </div>
+          <div class="detail-actions">
+            <label class="switch">
+              <input id="equipmentPowerToggle" type="checkbox" />
+              <span></span>
+              <strong id="equipmentPowerLabel">On</strong>
+            </label>
+            <button id="closeDetailBtn" class="secondary" type="button">Close</button>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <article>
+            <h3>Latest Readings</h3>
+            <div id="detailReadings" class="metric-grid"></div>
+          </article>
+          <article>
+            <h3>Trend</h3>
+            <canvas id="equipmentTrendChart" width="760" height="300"></canvas>
+          </article>
+          <article>
+            <h3>Issue Status</h3>
+            <div id="detailIssues" class="stack"></div>
+          </article>
+          <article>
+            <h3>Monitoring Guidance</h3>
+            <div id="detailGuidance" class="stack"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="entry" class="view">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Time based manual recording</p>
+            <h2>Manual Data Entry</h2>
+          </div>
+          <button id="clearFormBtn" class="secondary" type="button">Clear Form</button>
+        </div>
+        <form id="entryForm" class="entry-form">
+          <div class="form-row">
+            <label>
+              Timestamp
+              <input id="timestamp" name="timestamp" type="datetime-local" required />
+            </label>
+            <label>
+              Equipment
+              <select id="equipmentSelect" name="equipment" required></select>
+            </label>
+            <label>
+              Department
+              <input id="department" name="department" type="text" placeholder="Utilities" />
+            </label>
+            <label>
+              Shift
+              <select id="shift" name="shift">
+                <option>General</option>
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+                <option>Night</option>
+              </select>
+            </label>
+          </div>
+          <div id="metricInputs" class="metric-inputs"></div>
+          <div class="notes-row">
+            <label>
+              Operator Notes
+              <textarea id="notes" name="notes" rows="3" placeholder="Observation, action taken, abnormal sound, maintenance note"></textarea>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="submit">Save Reading</button>
+          </div>
+        </form>
+        <article>
+          <h3>Recent Readings</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Equipment</th>
+                  <th>Department</th>
+                  <th>Shift</th>
+                  <th>Key Values</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="entryRows"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="equipment" class="view">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Monitoring register</p>
+            <h2>Equipment & Energy Saving Opportunities</h2>
+          </div>
+          <input id="equipmentSearch" class="search" type="search" placeholder="Search equipment, parameter, opportunity" />
+        </div>
+        <div id="equipmentCards" class="equipment-grid"></div>
+      </section>
+
+      <section id="analysis" class="view">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Consumption patterns</p>
+            <h2>Energy Analysis</h2>
+          </div>
+          <label class="compact-select">
+            Chart Metric
+            <select id="chartMetric">
+              <option value="kWh">Energy (kWh)</option>
+              <option value="kW">Power (kW)</option>
+              <option value="cost">Cost</option>
+              <option value="carbon">Carbon</option>
+            </select>
+          </label>
+        </div>
+        <div class="analysis-grid">
+          <article>
+            <h3>Daily Energy Trend</h3>
+            <canvas id="trendChart" width="900" height="360"></canvas>
+          </article>
+          <article>
+            <h3>Breakdowns</h3>
+            <div id="breakdownList" class="stack"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="reports" class="view">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Audit ready summaries</p>
+            <h2>Reports</h2>
+          </div>
+          <label class="compact-select">
+            Report Type
+            <select id="reportType">
+              <option value="daily">Daily Energy Report</option>
+              <option value="weekly">Weekly Report</option>
+              <option value="monthly">Monthly Report</option>
+              <option value="machine">Machine-wise Report</option>
+              <option value="department">Department-wise Report</option>
+              <option value="shift">Shift-wise Report</option>
+              <option value="cost">Cost Report</option>
+              <option value="carbon">Carbon Emission Report</option>
+              <option value="utility">Utility Report</option>
+            </select>
+          </label>
+        </div>
+        <article id="reportOutput"></article>
+      </section>
+    </main>
+
+    <footer>
+      <span>Manual EMS for industrial utilities, production loads, HVAC, renewables, fuel and water.</span>
+      <span>Data is stored locally in this browser.</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
